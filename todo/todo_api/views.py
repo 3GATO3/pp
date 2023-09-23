@@ -3,7 +3,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 from .models import Todo
-from .serializers import TodoSerializer
+from django.contrib.auth.models import User, Group
+from rest_framework import viewsets
+from .serializers import TodoSerializer, UserSerializer, GroupSerializer, CalificacionSerializer
 from .models import Calificacion
 import gspread
 import pandas as pd
@@ -53,7 +55,7 @@ class TodoDetailApiView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def put(self, request, todo_id, *args, **kargs):
-        todo_instance = self.get_object(todo_id, rquest.user.id)
+        todo_instance = self.get_object(todo_id, request.user.id)
         if not todo_instance:
             return Response(
                 {"res": "Object with todo id does not exists"}, 
@@ -107,4 +109,24 @@ class CalificacionListApiView(APIView):
         f.write(serialized_data)
         f.close()
         return Response(serialized_data)
+    
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class CalificacionViewSet(viewsets.ModelViewSet):
+    queryset = Calificacion.objects.all()
+    serializer_class = CalificacionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+
 # Create your views here.
